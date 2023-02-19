@@ -1,3 +1,4 @@
+using Assets.Scripts;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -9,26 +10,35 @@ public class Snake : MonoBehaviour
     SnakeSegment segmentPrefab;
 
 
+    Animator myAnimator;
+
     private Vector2 direction = new Vector2(0f, 0f);
+    private SnakeDirection snakeDirection = SnakeDirection.Right;
 
     List<SnakeSegment> body = new List<SnakeSegment>();
     private bool shouldBodyMove = true;
+
+    private void Start() {
+       myAnimator = GetComponent<Animator>();
+    }
 
     void Update()
     {
         if((Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.UpArrow)) && direction != Vector2.down ) {
             direction = Vector2.up;
-            gameObject.transform.Rotate(0, 0, 90, Space.World);
+            snakeDirection = SnakeDirection.Up;
         }
         else if ((Input.GetKeyDown(KeyCode.S) || Input.GetKeyDown(KeyCode.DownArrow)) && direction != Vector2.up) {
             direction = Vector2.down;
-            gameObject.transform.Rotate(0, 0, 270, Space.World);
-        } else if ((Input.GetKeyDown(KeyCode.A) || Input.GetKeyDown(KeyCode.LeftArrow)) && direction != Vector2.right) {
+            snakeDirection = SnakeDirection.Down;
+        }
+        else if ((Input.GetKeyDown(KeyCode.A) || Input.GetKeyDown(KeyCode.LeftArrow)) && direction != Vector2.right) {
             direction = Vector2.left;
-            gameObject.transform.Rotate(0, 0, 180, Space.World);
-        } else if ((Input.GetKeyDown(KeyCode.D) || Input.GetKeyDown(KeyCode.RightArrow)) && direction != Vector2.left) {
+            snakeDirection = SnakeDirection.Left;
+        }
+        else if ((Input.GetKeyDown(KeyCode.D) || Input.GetKeyDown(KeyCode.RightArrow)) && direction != Vector2.left) {
             direction = Vector2.right;
-            gameObject.transform.Rotate(0, 0, 0, Space.World);
+            snakeDirection = SnakeDirection.Right;
         }
     }
 
@@ -48,8 +58,8 @@ public class Snake : MonoBehaviour
             }
         }
         float zRotation = GetHeadRotation();
-        Quaternion newRotation = gameObject.transform.rotation;
-        newRotation.z = zRotation;
+        print("Got a z rotation of: " + zRotation.ToString());
+        Quaternion newRotation = Quaternion.Euler(0f, 0f, Mathf.Round(zRotation));
         gameObject.transform.SetPositionAndRotation(new Vector3(xPos, yPos, 0f), newRotation);
         if(shouldBodyMove == false) {
             foreach (SnakeSegment segment in body) {
@@ -60,9 +70,9 @@ public class Snake : MonoBehaviour
     }
 
     private float GetHeadRotation() {
-        if (direction == Vector2.up) { return 90f; }
-        else if (direction == Vector2.down) { return 270f; }
-        else if (direction == Vector2.left) { return 180f; }
+        if (snakeDirection == SnakeDirection.Up) { return 90f; }
+        else if (snakeDirection == SnakeDirection.Down) { return 270f; }
+        else if (snakeDirection == SnakeDirection.Left) { return 180f; }
         else { return 0f; }
     }
 
@@ -71,6 +81,7 @@ public class Snake : MonoBehaviour
             ResetGame();
         } else if(other.tag == "Food") {
             print("I ate some food!");
+            myAnimator.SetTrigger("FoundFruit");
             SnakeSegment newSegment = Instantiate(segmentPrefab, gameObject.transform.position, Quaternion.identity);
             newSegment.direction = direction;
             newSegment.shouldMove = false;
