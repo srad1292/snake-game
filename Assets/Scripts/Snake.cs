@@ -9,6 +9,9 @@ public class Snake : MonoBehaviour
     [SerializeField]
     SnakeSegment segmentPrefab;
 
+    [SerializeField]
+    SoundManager soundManager;
+
 
     Animator myAnimator;
 
@@ -77,9 +80,11 @@ public class Snake : MonoBehaviour
     }
 
     private void OnTriggerEnter2D(Collider2D other) {
-        if(other.tag == "Border" || other.tag == "Snake") {
+        soundManager.PlaySnakeSound(other.tag);
+
+        if(other.tag == SnakeTag.Border || other.tag == SnakeTag.Snake) {
             ResetGame();
-        } else if(other.tag == "Food") {
+        } else if(other.tag == SnakeTag.Food) {
             print("I ate some food!");
             myAnimator.SetTrigger("FoundFruit");
             SnakeSegment newSegment = Instantiate(segmentPrefab, gameObject.transform.position, Quaternion.identity);
